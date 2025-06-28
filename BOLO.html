@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Police BOLO System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* General styling for the retro terminal look */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
+            color: #00ff41;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .mdc-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #00ff41;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            text-shadow: 0 0 10px #00ff41;
+            animation: glow 2s ease-in-out infinite alternate;
+            text-transform: uppercase;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff41; }
+            to { text-shadow: 0 0 20px #00ff41, 0 0 30px #00ff41; }
+        }
+        
+        /* Form styling */
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        .form-section h3 {
+            border-bottom: 1px dashed #00ff41;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            color: #00ff41;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        input, textarea {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            border-radius: 3px;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0 0 5px #00ff41;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* Buttons */
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #00ff41, #00cc33);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 65, 0.4);
+        }
+
+        .button.secondary {
+            background: transparent;
+            color: #00ff41;
+            border: 1px solid #00ff41;
+        }
+        
+        /* New Export Document Styling */
+        .export-document {
+            display: none;
+            width: 8.5in;
+            min-height: 11in;
+            margin: 0 auto;
+            background: white;
+            color: black;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12pt;
+            padding: 0.5in;
+            border: 2px solid black;
+        }
+
+        .report-frame {
+            border: 6px double black;
+            padding: 0.3in;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .report-header {
+            text-align: center;
+        }
+
+        .report-header h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .report-header h2 {
+            font-size: 14pt;
+            margin: 5px 0 0 0;
+            letter-spacing: 1px;
+        }
+        
+        .report-date-line {
+            text-align: right;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-size: 11pt;
+            border-bottom: 1.5px solid black;
+            padding-bottom: 10px;
+        }
+
+        .report-section-title {
+            font-weight: normal;
+            font-size: 12pt;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            border-bottom: 1.5px dashed black;
+            padding-bottom: 3px;
+        }
+
+        .report-content-block {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 11pt;
+            padding-left: 1em;
+            padding-top: 5px;
+        }
+
+        .report-footer {
+            text-align: center;
+            margin-top: auto;
+            padding-top: 40px;
+            font-style: italic;
+            font-size: 10pt;
+        }
+
+        /* Status bar */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid #00ff41;
+            padding: 10px;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="mdc-container">
+        <div class="header">
+            <h1>BE ON THE LOOKOUT</h1>
+            <div>Los Santos Police Department - BOLO Terminal</div>
+        </div>
+
+        <div id="boloForm">
+            <div class="form-section">
+                <h3>OFFICER INFORMATION</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="officerName">Officer Name</label>
+                        <input type="text" id="officerName" placeholder="e.g., Carter Blackwell">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsign">Callsign</label>
+                        <input type="text" id="callsign" placeholder="e.g., 2W11">
+                    </div>
+                     <div class="form-group">
+                        <label for="boloId">BOLO ID</label>
+                        <input type="text" id="boloId" placeholder="e.g., LSPD-BOLO-3471">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>INCIDENT & SUSPECT INFORMATION</h3>
+                 <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="status">Status</label>
+                        <input type="text" id="status" placeholder="e.g., WANTED (H-RAW)">
+                    </div>
+                     <div class="form-group full-width">
+                        <label for="details">Details</label>
+                        <textarea id="details" placeholder="Suspect description, vehicle, etc."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="narrative">Narrative</label>
+                        <textarea id="narrative" placeholder="Detailed story of the incident..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>INCIDENT DETAILS</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="dateOfOccurrence">Date of Occurrence</label>
+                        <input type="text" id="dateOfOccurrence" placeholder="e.g., 08/JUN/2025">
+                    </div>
+                    <div class="form-group">
+                        <label for="timeOfOccurrence">Time of Occurrence</label>
+                        <input type="text" id="timeOfOccurrence" placeholder="e.g., 08:30">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" placeholder="e.g., Downtown">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="full-width">CHARGES & ATTACHMENTS</h3>
+                <div class="form-group full-width">
+                     <label for="chargesFiled">Charges Filed</label>
+                    <textarea id="chargesFiled" placeholder="List of charges..."></textarea>
+                </div>
+                <div class="form-group full-width">
+                     <label for="bwcFootage">BWC / Dashboard Footage / Images</label>
+                    <textarea id="bwcFootage" placeholder="ลิงก์ หรือชื่อไฟล์..."></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label for="evidencePhoto">Evidence Photo Upload</label>
+                    <input type="file" id="evidencePhoto" accept="image/*" onchange="handleEvidencePhoto(this)">
+                    <img id="evidencePreview" alt="Evidence Preview" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none; border: 1px dashed #00ff41; padding: 5px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button class="button" onclick="exportToPNG()">Export as PNG</button>
+            <button class="button" onclick="printTextReport()">Print Text Report</button>
+            <button class="button secondary" onclick="clearForm()">Clear Form</button>
+        </div>
+    </div>
+
+    <!-- Hidden printable area -->
+    <div id="exportDocumentContainer" style="position: absolute; left: -9999px; top: 0;">
+        <div class="export-document" id="exportDocument">
+            <div class="report-frame">
+                <div class="report-header">
+                    <h1>LOS SANTOS POLICE DEPARTMENT</h1>
+                    <h2>BE ON THE LOOKOUT</h2>
+                </div>
+                <div class="report-date-line" id="exportDate"></div>
+                
+                <div class="report-section-title">----OFFICER INFORMATION</div>
+                <div class="report-content-block" id="exportOfficerInfo"></div>
+                
+                <div class="report-section-title">----STATUS</div>
+                <div class="report-content-block" id="exportStatus"></div>
+                
+                <div class="report-section-title">----DETAILS</div>
+                <div class="report-content-block" id="exportDetails"></div>
+                
+                <div class="report-section-title">----NARRATIVE</div>
+                <div class="report-content-block" id="exportNarrative"></div>
+                
+                <div class="report-section-title">----INCIDENT DETAILS</div>
+                <div class="report-content-block" id="exportIncidentInfo"></div>
+                
+                <div class="report-section-title">----CHARGES FILED</div>
+                <div class="report-content-block" id="exportChargesFiled"></div>
+
+                <div class="report-section-title">----BWC / DASHCAM / PHOTOS</div>
+                <div class="report-content-block" id="exportBwc"></div>
+
+                <div id="exportEvidencePhotoSection" style="display:none; margin-top: 15px;">
+                    <div class="report-section-title">----EVIDENCE PHOTO</div>
+                    <div class="report-content-block" style="text-align: center;">
+                        <img id="exportEvidencePhoto" style="max-width: 80%; max-height: 4in; border: 1px solid #ccc;">
+                    </div>
+                </div>
+
+                <div class="report-footer">
+                    <div>-- END OF REPORT --</div>
+                    <div id="exportBoloIdFooter" style="margin-top: 5px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        STATUS: ONLINE | USER: OFFICER | TERMINAL: BOLO-001 | <span id="currentTime"></span>
+    </div>
+
+    <script>
+        let evidencePhotoData = null;
+
+        function handleEvidencePhoto(input) {
+            const file = input.files[0];
+            const preview = document.getElementById('evidencePreview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    evidencePhotoData = e.target.result;
+                    preview.src = evidencePhotoData;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                evidencePhotoData = null;
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+        }
+
+        function getCurrentThaiDateTime() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' };
+            // Manually construct the date to match the "28 มิถุนายน 2568 20:46" format
+             const year = now.getFullYear() + 543;
+            const month = now.toLocaleDateString('th-TH', { month: 'long', timeZone: 'Asia/Bangkok' });
+            const day = now.getDate();
+            const time = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Bangkok' });
+            return `Date: ${day} ${month} ${year} ${time}`;
+        }
+
+
+        function populateExportDocument() {
+            document.getElementById('exportDate').textContent = getCurrentThaiDateTime();
+
+            const officerName = document.getElementById('officerName').value;
+            const callsign = document.getElementById('callsign').value;
+            const boloId = document.getElementById('boloId').value;
+            const status = document.getElementById('status').value;
+            const details = document.getElementById('details').value;
+            const narrative = document.getElementById('narrative').value;
+            const dateOfOccurrence = document.getElementById('dateOfOccurrence').value;
+            const timeOfOccurrence = document.getElementById('timeOfOccurrence').value;
+            const location = document.getElementById('location').value;
+            const chargesFiled = document.getElementById('chargesFiled').value;
+            const bwcFootage = document.getElementById('bwcFootage').value;
+            
+            document.getElementById('exportOfficerInfo').textContent = `Officer Name: ${officerName || 'N/A'}\nCallsign: ${callsign || 'N/A'}`;
+            document.getElementById('exportStatus').textContent = status || 'N/A';
+            document.getElementById('exportDetails').textContent = details || 'N/A';
+            document.getElementById('exportNarrative').textContent = narrative || 'N/A';
+            document.getElementById('exportIncidentInfo').textContent = `Date of Occurrence: ${dateOfOccurrence || 'N/A'}\nTime of Occurrence: ${timeOfOccurrence || 'N/A'}\nLocation: ${location || 'N/A'}`;
+            document.getElementById('exportChargesFiled').textContent = chargesFiled || 'N/A';
+            document.getElementById('exportBwc').textContent = bwcFootage || 'N/A';
+
+            const exportPhotoSection = document.getElementById('exportEvidencePhotoSection');
+            const exportPhotoImage = document.getElementById('exportEvidencePhoto');
+            if (evidencePhotoData) {
+                exportPhotoImage.src = evidencePhotoData;
+                exportPhotoSection.style.display = 'block';
+            } else {
+                exportPhotoImage.src = '';
+                exportPhotoSection.style.display = 'none';
+            }
+
+            document.getElementById('exportBoloIdFooter').textContent = 
+                `${boloId || 'LSPD-BOLO-0000'} | Los Santos Police Department – Be On Look Out Report File`;
+        }
+
+        async function exportToPNG() {
+            populateExportDocument();
+            const exportElement = document.getElementById('exportDocument');
+            const container = document.getElementById('exportDocumentContainer');
+            
+            container.style.position = 'static';
+            exportElement.style.display = 'block';
+            
+            try {
+                const canvas = await html2canvas(exportElement, {
+                    backgroundColor: '#ffffff', scale: 2, useCORS: true, allowTaint: true,
+                });
+                const imgData = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `${document.getElementById('boloId').value || 'BOLO_Report'}.png`;
+                link.href = imgData;
+                link.click();
+            } catch (error) {
+                console.error('Error generating PNG:', error);
+                alert('เกิดข้อผิดพลาดในการสร้าง PNG');
+            } finally {
+                container.style.position = 'absolute';
+                exportElement.style.display = 'none';
+            }
+        }
+
+        function printTextReport() {
+            const officerName = document.getElementById('officerName').value;
+            const callsign = document.getElementById('callsign').value;
+            const status = document.getElementById('status').value;
+            const details = document.getElementById('details').value;
+            const narrative = document.getElementById('narrative').value;
+            const dateOfOccurrence = document.getElementById('dateOfOccurrence').value;
+            const timeOfOccurrence = document.getElementById('timeOfOccurrence').value;
+            const location = document.getElementById('location').value;
+            const chargesFiled = document.getElementById('chargesFiled').value;
+            const bwcFootage = document.getElementById('bwcFootage').value;
+            const boloId = document.getElementById('boloId').value;
+            
+            const unixTimestamp = Math.floor(Date.now() / 1000);
+            
+            const chargesList = chargesFiled ? `- ${chargesFiled.replace(/\n/g, '\n- ')}` : '- N/A';
+            const bwcList = bwcFootage ? `- ${bwcFootage.replace(/\n/g, '\n- ')}` : '- N/A';
+
+            const reportContent = `# __BE ON LOOK OUT__
+**Date:** <t:${unixTimestamp}:f>
+----
+__**OFFICER INFORMATION**__
+- **Officer Name:** ${officerName || ''}
+- **Callsign:** ${callsign || ''}
+
+----
+__**STATUS: ${status || 'N/A'}**__
+----
+__**DETAILS**__
+${details || ''}
+----
+__**NARRATIVE**__
+${narrative || ''}
+----
+__**INCIDENT DETAILS**__
+- **Date of Occurrence:** ${dateOfOccurrence || ''}
+- **Time of Occurrence:** ${timeOfOccurrence || ''}
+- **Location:** ${location || ''}
+---
+
+__**CHARGES FILED**__
+${chargesList}
+---
+__**BWC / DASHCAM / PHOTOS**__
+${bwcList}
+- **Evidence Photo:** ${evidencePhotoData ? 'Image Attached (See PNG Export)' : 'N/A'}
+---
+### -- END OF REPORT --
+*${boloId || 'LSPD-BOLO-0000'} | Los Santos Police Department – Be On Look Out Report File*`;
+
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write('<textarea readonly style="width: 100%; height: 100%; font-family: \'Courier New\', monospace; white-space: pre-wrap; word-wrap: break-word; border: none; resize: none;">' + reportContent + '</textarea>');
+            newWindow.document.close();
+            newWindow.focus();
+        }
+
+        function clearForm() {
+            document.getElementById('boloForm').reset();
+            document.getElementById('evidencePreview').style.display = 'none';
+            document.getElementById('evidencePreview').src = '';
+            evidencePhotoData = null;
+        }
+
+        function updateTime() {
+            document.getElementById('currentTime').textContent = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+</body>
+</html>
